@@ -10,17 +10,10 @@ from atomic_data import atomic_masses, atomic_numbers, covalent_radii, vdw_radii
 def read_xyz(filename):
     with open(filename) as fp:
         f = fp.readlines()
-        print(f[0])
     try:
         number_of_atoms = int(f[0])
     except ValueError as e:
         sys.exit(f"First line should be number of atoms in the file {filename}")
-    mol_title = f[1].rstrip()
-    try:
-        energy = float(re.split(':|=|\s+', mol_title)[1])
-    except Exception as e:
-        print(f"No energy found\n{e}")
-        energy = None
     try:
         geometry_section = [each_line.split() for each_line in f[2:] if
                             len(each_line) >= 4]
@@ -44,11 +37,11 @@ def read_xyz(filename):
 
     mol_coordinates = np.array(coordinates)
     mol_name = filename[:-4]
-    return atoms_list, mol_coordinates, mol_name, mol_title, energy
+    return atoms_list, mol_coordinates, mol_name
 
 
 def calculate_distances(name):
-    atoms_list, coordinates, name, title, energy = read_xyz(name)
+    atoms_list, coordinates, name  = read_xyz(name)
     df = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance'])
     for i, c in enumerate(coordinates):
         for j, d in enumerate(coordinates):
@@ -63,6 +56,7 @@ def calculate_distances(name):
                                ignore_index=True)
     for fr in df.groupby(df.Bond):
         print(fr[0])
+        print(fr[1])
         print(fr[1].Distance.describe())
 
 
