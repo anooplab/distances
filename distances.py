@@ -51,7 +51,7 @@ def calculate_distances(name, df):
             if j > i and distance < sum_of_covalent_radii:
                 df = df.append({'Bond': '-'.join(sorted([atoms_list[i], atoms_list[j]])),
                                 'Atom 1': i, 'Atom 2': j,
-                                'Distance': distance},
+                                'Distance': distance, 'Filename':name},
                                ignore_index=True)
     return df
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     parser.add_argument('xyz_file_name', nargs='+')
     args = parser.parse_args()
     xyz_files = args.xyz_file_name
-    distance_data = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance'])
+    distance_data = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
     for xyz_file in xyz_files:
         df = calculate_distances(xyz_file, distance_data)
         distance_data = distance_data.append(df, ignore_index=True)
