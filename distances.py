@@ -50,7 +50,7 @@ def calculate_distances(name):
             sum_of_covalent_radii = (a+b) * 1.3
             distance = np.linalg.norm(c - d)
             if j > i and distance < sum_of_covalent_radii:
-                df = df.append({'Bond': atoms_list[i] + "-" + atoms_list[j],
+                df = df.append({'Bond': '-'.join(sorted([atoms_list[i], atoms_list[j]])),
                                 'Atom 1': i, 'Atom 2': j,
                                 'Distance': distance},
                                ignore_index=True)
