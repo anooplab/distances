@@ -40,9 +40,8 @@ def read_xyz(filename):
     return atoms_list, mol_coordinates, mol_name
 
 
-def calculate_distances(name):
+def calculate_distances(name, df):
     atoms_list, coordinates, name  = read_xyz(name)
-    df = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance'])
     for i, c in enumerate(coordinates):
         for j, d in enumerate(coordinates):
             a = covalent_radii[atomic_numbers[atoms_list[i]]]
@@ -54,10 +53,7 @@ def calculate_distances(name):
                                 'Atom 1': i, 'Atom 2': j,
                                 'Distance': distance},
                                ignore_index=True)
-    for fr in df.groupby(df.Bond):
-        print(fr[0])
-        print(fr[1])
-        print(fr[1].Distance.describe())
+    return df
 
 
 # Press the green button in the gutter to run the script.
@@ -65,9 +61,16 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('xyz_file_name')
+    parser.add_argument('xyz_file_name', nargs='+')
     args = parser.parse_args()
-    xyz_file = args.xyz_file_name
-    calculate_distances(xyz_file)
+    xyz_files = args.xyz_file_name
+    distance_data = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance'])
+    for xyz_file in xyz_files:
+        df = calculate_distances(xyz_file, distance_data)
+        distance_data = distance_data.append(df, ignore_index=True)
+    for fr in distance_data.groupby(distance_data.Bond):
+        print(fr[0])
+        print(fr[1])
+        print(fr[1].Distance.describe())
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
