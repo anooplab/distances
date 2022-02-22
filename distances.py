@@ -40,8 +40,9 @@ def read_xyz(filename):
     return atoms_list, mol_coordinates, mol_name
 
 
-def calculate_distances(name, df):
+def calculate_distances(name):
     atoms_list, coordinates, name  = read_xyz(name)
+    df = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
     for i, c in enumerate(coordinates):
         for j, d in enumerate(coordinates):
             a = covalent_radii[atomic_numbers[atoms_list[i]]]
@@ -66,7 +67,7 @@ if __name__ == '__main__':
     xyz_files = args.xyz_file_name
     distance_data = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
     for xyz_file in xyz_files:
-        df = calculate_distances(xyz_file, distance_data)
+        df = calculate_distances(xyz_file)
         distance_data = distance_data.append(df, ignore_index=True)
     for fr in distance_data.groupby(distance_data.Bond):
         print(fr[0])
