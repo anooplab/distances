@@ -4,7 +4,7 @@ import sys
 import re
 import numpy as np
 import pandas as pd
-from atomic_data import atomic_masses, atomic_numbers, covalent_radii, vdw_radii
+from atomic_data import atomic_numbers, covalent_radii
 
 
 def read_xyz(filename):
@@ -40,14 +40,14 @@ def read_xyz(filename):
     return atoms_list, mol_coordinates, mol_name
 
 
-def calculate_distances(name):
+def calculate_distances(name, scale):
     atoms_list, coordinates, name  = read_xyz(name)
     df = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
     for i, c in enumerate(coordinates):
         for j, d in enumerate(coordinates):
             a = covalent_radii[atomic_numbers[atoms_list[i]]]
             b = covalent_radii[atomic_numbers[atoms_list[j]]]
-            sum_of_covalent_radii = (a+b) * 1.3
+            sum_of_covalent_radii = (a+b) * scale
             distance = np.linalg.norm(c - d)
             if j > i and distance < sum_of_covalent_radii:
                 df = df.append({'Bond': '-'.join(sorted([atoms_list[i], atoms_list[j]])),
@@ -63,16 +63,37 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('xyz_file_name', nargs='+')
+    parser.add_argument('-g', '--groupby',
+        choices=['bond', 'file', 'both'], 
+        default='both', help='Group the results by bond, file, or both')
+    parser.add_argument('-t', '--tolerance',
+        default=1.3, help='Tolerance for bond distance cutoff. Default is 1.3, i.e., 1.3 times the sum of covalent radii')
     args = parser.parse_args()
-    xyz_files = args.xyz_file_name
-    distance_data = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
-    for xyz_file in xyz_files:
-        df = calculate_distances(xyz_file)
-        distance_data = distance_data.append(df, ignore_index=True)
-    for fr in distance_data.groupby([distance_data.Bond, distance_data.Filename]):
-        print(fr[0])
-        print(fr[1])
-        print(fr[1].Distance.describe())
 
-print(distance_data)
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    xyz_files = args.xyz_file_name
+    groupping = args.groupby
+    bond_tolerance = float(args.tolerance)
+
+    distance_data = pd.DataFrame(columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
+
+    for xyz_file in xyz_files:
+        df = calculate_distances(xyz_file, bond_tolerance)
+        distance_data = distance_data.append(df, ignore_index=True)
+
+    if groupping == 'bond':
+       for fr in distance_data.groupby(distance_data.Bond):
+           print(f"Grouped by: {fr[0]}")
+           print("Distance data\n", fr[1])
+           print(fr[1].Distance.describe())
+    if groupping == 'file':
+        for fr in distance_data.groupby([distance_data.Bond, distance_data.Filename]):
+            print(f"Grouped by: {fr[0]}")
+            print("Distance data\n", fr[1])
+            print(fr[1].Distance.describe())
+    if groupping == 'both':
+        for fr in distance_data.groupby([distance_data.Bond, distance_data.Filename]):
+            print(f"Grouped by: {fr[0]}")
+            print("Distance data\n", fr[1])
+            print(fr[1].Distance.describe())
+
+# print(distance_data)
