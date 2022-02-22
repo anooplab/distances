@@ -69,9 +69,10 @@ if __name__ == '__main__':
     for xyz_file in xyz_files:
         df = calculate_distances(xyz_file)
         distance_data = distance_data.append(df, ignore_index=True)
-    for fr in distance_data.groupby(distance_data.Bond):
+    for fr in distance_data.groupby([distance_data.Bond, distance_data.Filename]):
         print(fr[0])
         print(fr[1])
         print(fr[1].Distance.describe())
 
+print(distance_data)
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
