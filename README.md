@@ -1,5 +1,6 @@
 Calculate all bond distances from an .xyz file.
 
+```
 usage: distances.py [-h] [-g {bond,file,both,none}] [-t TOLERANCE] [-o OUTPUT]
                     xyz_file_name [xyz_file_name ...]
 
@@ -15,3 +16,4 @@ optional arguments:
                         the sum of covalent radii
   -o OUTPUT, --output OUTPUT
                         Create a csv file of the distance data.
+```

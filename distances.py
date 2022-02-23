@@ -73,7 +73,7 @@ if __name__ == '__main__':
                         default=1.3,
                         help='Tolerance for bond distance cutoff. Default is '
                              '1.3, i.e., 1.3 times the sum of covalent radii')
-    parser.add_argument('-o', '--output',
+    parser.add_argument('-o', '--output', metavar='output_file_name',
                         help='Create a csv file of the distance data.')
 
     args = parser.parse_args()
@@ -86,8 +86,8 @@ if __name__ == '__main__':
         columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
 
     for xyz_file in xyz_files:
-        df = calculate_distances(xyz_file, bond_tolerance)
-        distance_data = distance_data.append(df, ignore_index=True)
+        df_this_file = calculate_distances(xyz_file, bond_tolerance)
+        distance_data = distance_data.append(df_this_file, ignore_index=True)
 
     if grouping == 'bond':
         for each_group in distance_data.groupby(distance_data.Bond):
