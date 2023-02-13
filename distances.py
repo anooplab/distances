@@ -1,7 +1,4 @@
 import sys
-
-import sys
-import re
 import numpy as np
 import pandas as pd
 from atomic_data import atomic_numbers, covalent_radii
@@ -13,15 +10,16 @@ def read_xyz(filename):
     try:
         number_of_atoms = int(f[0])
     except ValueError as e:
-        sys.exit(f"First line should be number of atoms in the file {filename}")
+        sys.exit(f"First line should be number of atoms in the file"
+                 f" {filename} {e}")
     try:
-        geometry_section = [each_line.split() for each_line in f[2:] if
-                            len(each_line) >= 4]
+        geometry_section = [each_line.split() for each_line in f[2:]
+                            if len(each_line) >= 4]
+
     except ValueError as e:
-        sys.exit(
-            "Something wrong with reading the geometry section")
+        sys.exit(f"Something wrong with reading the geometry section \n{e}")
     if len(geometry_section) != number_of_atoms:
-        sys.exit('Error in reading %s' % filename)
+        sys.exit(f'Error in reading {filename}')
     atoms_list = []
     coordinates = []
     for c in geometry_section:
@@ -31,10 +29,9 @@ def read_xyz(filename):
             y_coord = float(c[2])
             z_coord = float(c[3])
         except ValueError as e:
-            sys.exit('Error in reading %s' % filename)
+            sys.exit(f'Error in reading {filename}\n{e}')
         atoms_list.append(symbol)
         coordinates.append([x_coord, y_coord, z_coord])
-
     mol_coordinates = np.array(coordinates)
     mol_name = filename[:-4]
     return atoms_list, mol_coordinates, mol_name
@@ -52,7 +49,7 @@ def calculate_distances(name, scale):
             distance = np.linalg.norm(c - d)
             if j > i and distance < sum_of_covalent_radii:
                 df = df.append(
-                    {'Bond': '-'.join(sorted([atoms_list[i], atoms_list[j]])),
+                    {'Bond': '-'.join([atoms_list[i], atoms_list[j]]),
                      'Atom 1': i, 'Atom 2': j,
                      'Distance': distance, 'Filename': name},
                     ignore_index=True)
@@ -96,7 +93,7 @@ if __name__ == '__main__':
             print(each_group[1].Distance.describe())
     elif grouping == 'file':
         for each_group in distance_data.groupby(
-                [distance_data.Bond, distance_data.Filename]):
+                distance_data.Filename):
             print(f"Grouped by: {each_group[0]}")
             print("Distance data\n", each_group[1])
             print(each_group[1].Distance.describe())
@@ -110,4 +107,3 @@ if __name__ == '__main__':
         print(distance_data.to_string())
     if args.output:
         distance_data.to_csv(args.output)
-
