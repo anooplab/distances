@@ -82,6 +82,9 @@ def calculate_distances(name, scale):
                           'Distance': distance, 'Filename': name}, 
                           index=[0])
                 df = pd.concat([df, df_tmp], ignore_index=True)
+    if df.empty:
+        print(f"{name}.xyz: Warning: No bonds were found!.")
+        print("Consider increasing the threshold value by using the '-t <scale>' command line argument, where <scale> is the factor by which the sum of covalent radii will be multiplied.")
 
     return df
 
@@ -115,6 +118,11 @@ if __name__ == '__main__':
         df_this_file = calculate_distances(xyz_file, bond_tolerance)
         # distance_data = distance_data.append(df_this_file, ignore_index=True)
         distance_data = pd.concat([distance_data, df_this_file], ignore_index=True)
+
+    if distance_data.empty:
+        print("\n\nNo bonds found in ", xyz_files)
+        print("Consider increasing the threshold value by using the '-t <scale>' command line argument, where <scale> is the factor by which the sum of covalent radii will be multiplied.")
+        sys.exit()
 
     if grouping == 'bond':
         for each_group in distance_data.groupby(distance_data.Bond):
