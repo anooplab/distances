@@ -5,6 +5,18 @@ from atomic_data import atomic_numbers, covalent_radii
 
 
 def read_xyz(filename):
+    """
+    
+    This function reads an XYZ file and returns the coordinates, atoms list and molecule name.
+    
+    Parameters:
+        filename (str): The file name of the XYZ file
+    
+    Returns:
+        atoms_list (list): A list of atoms in the molecule
+        mol_coordinates (numpy.ndarray): The coordinates of the molecule
+        mol_name (str): The name of the molecule
+    """
     with open(filename) as fp:
         f = fp.readlines()
     try:
@@ -38,6 +50,22 @@ def read_xyz(filename):
 
 
 def calculate_distances(name, scale):
+    """
+    This function calculates distances between atoms in an XYZ file.
+    
+    Parameters
+    ----------
+    name : str
+        XYZ filename
+    scale : float
+        scaling factor for covalent radii
+    
+    Returns
+    -------
+    df : Pandas DataFrame
+        DataFrame of bonds, atoms, distances, and filename
+    
+    """
     atoms_list, coordinates, name = read_xyz(name)
     df = pd.DataFrame(
         columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
@@ -48,15 +76,16 @@ def calculate_distances(name, scale):
             sum_of_covalent_radii = (a + b) * scale
             distance = np.linalg.norm(c - d)
             if j > i and distance < sum_of_covalent_radii:
-                df = df.append(
-                    {'Bond': '-'.join([atoms_list[i], atoms_list[j]]),
-                     'Atom 1': i, 'Atom 2': j,
-                     'Distance': distance, 'Filename': name},
-                    ignore_index=True)
+                df_tmp = pd.DataFrame(
+                         {'Bond': '-'.join([atoms_list[i], atoms_list[j]]), 
+                          'Atom 1': i, 'Atom 2': j, 
+                          'Distance': distance, 'Filename': name}, 
+                          index=[0])
+                df = pd.concat([df, df_tmp], ignore_index=True)
+
     return df
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     import argparse
 
@@ -84,7 +113,8 @@ if __name__ == '__main__':
 
     for xyz_file in xyz_files:
         df_this_file = calculate_distances(xyz_file, bond_tolerance)
-        distance_data = distance_data.append(df_this_file, ignore_index=True)
+        # distance_data = distance_data.append(df_this_file, ignore_index=True)
+        distance_data = pd.concat([distance_data, df_this_file], ignore_index=True)
 
     if grouping == 'bond':
         for each_group in distance_data.groupby(distance_data.Bond):

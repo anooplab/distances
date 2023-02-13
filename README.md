@@ -18,6 +18,7 @@ The script has the following options:
 To calculate the bond lengths of the xyz files molecule1.xyz and molecule2.xyz and save the results in a csv file, run the command
 `python bond_lengths.py molecule1.xyz molecule2.xyz -g both -o results.csv`
 
+## Help
 
 ```
 python distances.py -h
