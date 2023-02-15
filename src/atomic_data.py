@@ -1,5 +1,5 @@
 # encoding: utf-8
-""" file from ASE"""
+""" The data from Atomic Simulation Environment (ASE)."""
 
 import numpy as np
 

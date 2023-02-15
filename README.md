@@ -3,7 +3,14 @@
 This is a Python script designed to analyze the bond lengths in molecules using their cartesian coordinates in the .xyz format. It is useful for anyone interested in chemistry or molecular science, and it can be easily used by novices as well.
 ## Usage
 
-To use the script, simply run the distance.py file from the command line with the appropriate arguments. The script takes an XYZ file that contains the coordinates of the atoms of a molecule, and calculates the distances between pairs of atoms. It then determines which atoms are bonded based on a threshold that depends on the sum of their covalent radii (adjusted by a scaling factor), and outputs the information in a Pandas DataFrame.
+To use the script, simply run the distance.py file from the command line with
+the appropriate arguments. The script takes an XYZ file that contains the
+coordinates of the atoms of a molecule, and calculates the distances between
+pairs of atoms. It then determines which atoms are bonded based on a threshold
+that depends on the sum of their covalent radii (adjusted by a scaling
+factor), and outputs the information in a Pandas DataFrame. The covalent radii
+is read from the `atomic_data.py` file containg the data from ASE ([Atomic
+Simukation Environment](https://wiki.fysik.dtu.dk/ase/)).
 
 The output DataFrame contains information about the bond, atoms, distance, and filename. If no bonds are found, it prints a warning message and suggests increasing the threshold value. The script uses the argparse module to parse command line arguments passed to the script. It then iterates over each specified XYZ file and calls the calculate_distances() function to compute the distances between atoms. The resulting data is stored in a Pandas DataFrame called distance_data, which is used to group the results based on the user-specified grouping parameter, by bond, file, or both.
 
