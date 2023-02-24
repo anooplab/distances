@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import pandas as pd
+from collections import Counter
 from atomic_data import atomic_numbers, covalent_radii
 
 
@@ -17,15 +18,16 @@ def read_xyz(filename):
         mol_coordinates (numpy.ndarray): The coordinates of the molecule
         mol_name (str): The name of the molecule
     """
-    with open(filename) as fp:
-        f = fp.readlines()
+    file_content = open('file.xyz').read()
+
     try:
-        number_of_atoms = int(f[0])
+        number_of_atoms = int(file_content.readline())
     except ValueError as e:
         sys.exit(f"First line should be number of atoms in the file"
                  f" {filename} {e}")
+    comments = file_content.readline()
     try:
-        geometry_section = [each_line.split() for each_line in f[2:]
+        geometry_section = [each_line.split() for each_line in file_content.split('\n')[2:]
                             if len(each_line) >= 4]
 
     except ValueError as e:
@@ -34,12 +36,12 @@ def read_xyz(filename):
         sys.exit(f'Error in reading {filename}')
     atoms_list = []
     coordinates = []
-    for c in geometry_section:
+    for atom in geometry_section:
         try:
-            symbol = c[0].capitalize()
-            x_coord = float(c[1])
-            y_coord = float(c[2])
-            z_coord = float(c[3])
+            symbol = atom[0].capitalize()
+            x_coord = float(atom[1])
+            y_coord = float(atom[2])
+            z_coord = float(atom[3])
         except ValueError as e:
             sys.exit(f'Error in reading {filename}\n{e}')
         atoms_list.append(symbol)
@@ -47,6 +49,23 @@ def read_xyz(filename):
     mol_coordinates = np.array(coordinates)
     mol_name = filename[:-4]
     return atoms_list, mol_coordinates, mol_name
+
+
+def write_formula(atoms: str) -> str:
+    """
+    Returns the formula of a molecule given its atoms.
+    
+    Parameters:
+    atoms (str): A string consisting of symbols of the atoms of the molecule.
+    
+    Returns:
+    str: A string representing the formula of the molecule with symbols and the number of atoms of each element.
+    
+    Example:
+    write_formula('CHHHHOO') -> 'C01H04O02'
+    """
+    symbols = Counter(atoms)
+    return ''.join(f'{k}{symbols[k]:02d}' for k in sorted(symbols.keys()))
 
 
 def calculate_distances(name, scale):
@@ -67,8 +86,12 @@ def calculate_distances(name, scale):
     
     """
     atoms_list, coordinates, name = read_xyz(name)
+
     df = pd.DataFrame(
-        columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename'])
+        columns=['Bond', 'Atom 1', 'Atom 2', 'Distance', 'Filename', 'Formula'])
+
+    formula = write_formula(atoms_list)
+
     for i, c in enumerate(coordinates):
         for j, d in enumerate(coordinates):
             a = covalent_radii[atomic_numbers[atoms_list[i]]]
@@ -80,6 +103,7 @@ def calculate_distances(name, scale):
                          {'Bond': '-'.join([atoms_list[i], atoms_list[j]]), 
                           'Atom 1': i, 'Atom 2': j, 
                           'Distance': distance, 'Filename': name}, 
+                          'Formula': formula}, 
                           index=[0])
                 df = pd.concat([df, df_tmp], ignore_index=True)
     if df.empty:
